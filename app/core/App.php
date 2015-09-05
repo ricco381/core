@@ -9,6 +9,9 @@ class App
         Config::$config = $config;
 
         require_once __DIR__ . "/../../bootstrap.php";
+        $rules = include_once PATH . 'config/router/rules.php';
+
+        (new Router($rules))->run();
 
         /**
          * Определнее контроллера и метода по умолчанию

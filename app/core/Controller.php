@@ -3,12 +3,6 @@
 class Controller
 {
     public $load; //Load model
-    public $router; //Роутер
-
-    public function __construct()
-    {
-        $this->router = new Router();
-    }
 
     public function action_index()
     {
@@ -58,7 +52,7 @@ class Controller
             $this->load('session')->set(['error' => $error]);
         }
 
-        header('Location: ' . $action);
+        header('Location: ' . $action);$this->router->addRules('2');
         exit;
     }
 }
