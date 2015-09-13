@@ -4,6 +4,8 @@ class Router
 {
     private $rules = []; //Правила для роутера
     private $url = []; //Адресная строка
+    private $action = []; //Контроллер и метод
+    private $result = [];
 
     /**
      * Добавление правил для роутинга
@@ -14,7 +16,6 @@ class Router
     {
         foreach ($rule as $url => $param) {
             $this->rules[$url] = $param;
-            $this->rules[$url]['url'] = explode('/', trim($url, '/'));
         }
     }
 
@@ -23,24 +24,45 @@ class Router
      */
     private function breakUrl()
     {
-        $this->url = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+        $this->url = $_SERVER['REQUEST_URI'];
     }
 
     /**
-     * Провека на совпадение адресной строки и массива правил
+     * Провека на совпадение адресной c справилом
      */
-    private function compareUrl()
-    {;
-
-        foreach ($this->rules as $param) {
-            if (count($this->url) == count($param['url']))
-            foreach ($param['url'] as $key => $val) {
-                echo $val;
+    private function parseURL()
+    {
+        foreach ($this->rules as $url => $param) {
+            if (preg_match("#^{$url}$#u", $this->url)) {
+                return $this->action = $param;
             }
         }
 
     }
 
+
+    /**
+     * Разбиваем сторку с названием контроллера и метода
+     *
+     * @param $action
+     */
+    private function parseAction()
+    {
+        $this->result['action'] = explode(":", $this->action['action']);
+        $this->result['param'] = explode("/", trim($this->url, '/'));
+    }
+
+    /**
+     * Проверяем метод запроса на совпадение с правилом
+     *
+     * @return bool
+     */
+    private function getMethod()
+    {
+        if (strtoupper($this->action['method']) == $_SERVER['REQUEST_METHOD']) {
+            return true;
+        }
+    }
 
     /**
      * Запус роутера
@@ -62,11 +84,24 @@ class Router
         $this->breakUrl();
 
         /**
-         * Проверяем массив $rules и $url на совпадение
+         * Проверяем url с правилами
          */
-        if (!$this->compareUrl()) {
-            //return false;
+        if (!is_array($this->parseURL())) {
+            return false;
         }
 
+        /**
+         * Проверяем метод запроса
+         */
+        if (!$this->getMethod()) {
+            return false;
+        }
+
+        /**
+         * Узнаем контроллер и метод
+         */
+        $this->parseAction();
+
+        return $this->result;
     }
 }

@@ -11,13 +11,13 @@ class App
         require_once __DIR__ . "/../../bootstrap.php";
         $rules = include_once PATH . 'config/router/rules.php';
 
-        (new Router($rules))->run();
+        $router = (new Router($rules))->run();
 
         /**
          * Определнее контроллера и метода по умолчанию
          */
-        $controller_name = (!empty($controller[0])) ? array_shift($controller) : $config['controller'];
-        $action = (!empty($fragment)) ? array_shift($fragment) : $config['action'];
+        $controller_name = (!empty($router)) ? $router['action'][0] : $config['controller'];
+        $action = (!empty($router)) ? $router['action'][1] : $config['action'];
 
 
         $controller = 'web\controller\\' . ucfirst($controller_name);
@@ -28,8 +28,9 @@ class App
          * Проверяем доступность контроллера
          */
         if (!class_exists($controller)) {
-            $this->error($controller);
+            $this->error();
         }
+
 
         /**
          * Создаем экземпляр класса контроллера
@@ -40,15 +41,15 @@ class App
          * Проверка доступности метода
          */
         if (!method_exists($controller, $action)) {
-            $this->error($action);
+            $this->error();
         }
 
         /**
          * Вызываем метод по умолчанию
          */
         try {
-        if(count($fragment))
-            call_user_func_array(array($controller, $action), $fragment);
+        if(count($router['param']))
+            call_user_func_array(array($controller, $action), $router['param']);
         else
             $controller->$action();
         } catch (\Exception $e) {
